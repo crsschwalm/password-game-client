@@ -1,191 +1,105 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-// import paperIcon from "../images/icon-paper.svg";
-// import scissorsIcon from "../images/icon-scissors.svg";
-// import rockIcon from "../images/icon-rock.svg";
+import { SocketContext } from '../context/socket';
+import useRoomData from '../hooks/useRoomData';
+
+const wait = (ms = 0) => {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, ms);
+  });
+};
 
 function Play(props) {
-  const myPick = props.mine;
-  const housePick = props.house;
-  const [countDown, setCountDown] = useState('3');
-  const [playerPickElement, setPlayerElement] = useState('');
-  const [housePickElement, setHouseElement] = useState('');
-  const [resultMessage, setResultMessage] = useState('');
+  useRoomData();
 
-  const [playerWins, setPlayerWins] = useState(false);
-  const [houseWins, setHouseWins] = useState(false);
+  const socket = useContext(SocketContext);
+  const [countDown, setCountDown] = useState(3);
+  const [countUp, setCountUp] = useState(0);
+  const [countDirection, setCountDirection] = useState('down');
+  const [password, setPassword] = useState('The Password is...');
 
-  function chooseWinner() {
-    if (myPick === 'rock' && housePick === 'scissors') {
-      setPlayerWins(true);
-      setHouseWins(false);
-    } else if (myPick === 'rock' && housePick === 'paper') {
-      setHouseWins(true);
-      setPlayerWins(false);
-    } else if (myPick === 'scissors' && housePick === 'paper') {
-      setPlayerWins(true);
-      setHouseWins(false);
-    } else if (myPick === 'scissors' && housePick === 'rock') {
-      setHouseWins(true);
-      setPlayerWins(false);
-    } else if (myPick === 'paper' && housePick === 'rock') {
-      setPlayerWins(true);
-      setHouseWins(false);
-    } else if (myPick === 'paper' && housePick === 'scissors') {
-      setHouseWins(true);
-      setPlayerWins(false);
-    } else {
-      setHouseWins(false);
-      setPlayerWins(false);
+  const startCountDown = async (from = countDown, to = 0) => {
+    while (from > to) {
+      await wait(1000);
+      const newCount = from - 1;
+      setCountDown(newCount);
+      return startCountDown(newCount);
     }
-  }
+    return;
+  };
 
-  function showWinner() {
-    const currentScore = props.score;
-
-    if (playerWins) {
-      props.setScore(currentScore + 1);
-      setResultMessage('You Win');
-    } else if (houseWins) {
-      props.setScore(currentScore - 1);
-      setResultMessage('You Lose');
-    } else {
-      setResultMessage('Draw');
+  const startCountUp = async (from = countUp, to = 120) => {
+    while (from < to) {
+      await wait(1000);
+      const newCount = from + 1;
+      setCountUp(newCount);
+      return startCountUp(newCount);
     }
-  }
-
-  function setMyPickIcon(pick) {
-    if (pick === 'rock') {
-      return rockIcon;
-    } else if (pick === 'paper') {
-      return paperIcon;
-    } else if (pick === 'scissors') {
-      return scissorsIcon;
-    }
-  }
-
-  function setMyPickClass(pick) {
-    if (pick === 'rock') {
-      return 'pick__rock';
-    } else if (pick === 'paper') {
-      return 'pick__paper';
-    } else if (pick === 'scissors') {
-      return 'pick__scissors';
-    }
-  }
-
-  function wait(ms = 0) {
-    return new Promise(function (resolve) {
-      setTimeout(resolve, ms);
-    });
-  }
+    return;
+  };
 
   useEffect(() => {
-    chooseWinner();
+    socket.on('fromApi.send.word', setPassword);
 
-    wait(500)
-      .then(() => {
-        setCountDown('2');
-        return wait(500);
-      })
-      .then(() => {
-        setCountDown('1');
-        return wait(500);
-      })
-      .then(() => {
-        setHouseElement(
-          <div className="pick">
-            <div className="result__desktop pick__title">
-              The House Picked {housePick}
-            </div>
-            <div
-              className={
-                'pick__item ' +
-                (houseWins ? 'winner ' : '') +
-                setMyPickClass(housePick)
-              }
-              style={{ backgroundImage: `url(${setMyPickIcon(housePick)}` }}
-            ></div>
-            <div className="result__mobile pick__title">
-              The House Picked {housePick}
-            </div>
-          </div>
-        );
-        setPlayerElement(
-          <div className="pick">
-            <div className="result__desktop pick__title">
-              You Picked {myPick}
-            </div>
-            <div
-              className={
-                'pick__item ' +
-                (playerWins ? 'winner ' : '') +
-                setMyPickClass(myPick)
-              }
-              style={{ backgroundImage: `url(${setMyPickIcon(myPick)}` }}
-            ></div>
-            <div className="result__mobile pick__title">
-              You Picked {myPick}
-            </div>
-          </div>
-        );
-        showWinner();
-      });
-  }, [setHouseElement, setCountDown, houseWins, playerWins]);
+    setCountDirection('down');
+    startCountDown().then(() => {
+      setCountDirection('up');
+      startCountUp();
+    });
+
+    return () => {
+      socket.off('fromApi.send.word', setPassword);
+    };
+  }, []);
+
+  const countLabel = countDirection === 'up' ? 'Start Thinking' : 'Get Ready!';
+  const count = countDirection === 'up' ? countUp : countDown;
 
   return (
     <div className="play-wrapper">
-      {playerPickElement ? (
-        playerPickElement
-      ) : (
-        <div className="pick">
-          <div className="result__desktop pick__title">You Picked {myPick}</div>
-          <div
-            className={'pick__item ' + setMyPickClass(myPick)}
-            style={{ backgroundImage: `url(${setMyPickIcon(myPick)}` }}
-          ></div>
-          <div className="result__mobile pick__title">You Picked {myPick}</div>
-        </div>
-      )}
-      <div
-        className={
-          'result__desktop game__result ' +
-          (resultMessage.length ? '' : 'invisible')
-        }
-      >
-        <h3>{resultMessage}</h3>
+      <div className="result__desktop game__result">
+        <h3>{password}</h3>
         <Link
           className="play-again__button "
           to="/"
-          onClick={() => props.setHousePick()}
+          // onClick={() => props.setHousePick()}
         >
-          Play Again
+          Yes! We got it!
+        </Link>
+
+        <Link
+          className="play-again__button "
+          to="/"
+          // onClick={() => props.setHousePick()}
+        >
+          Nope, skip to next player
         </Link>
       </div>
-      {housePickElement ? (
-        housePickElement
-      ) : (
-        <div className="pick">
-          <div className="pick__title result__desktop">The House Picked:</div>
-          <div className="pick__item">
-            <span>{countDown}</span>
-          </div>
-          <div className="pick__title result__mobile">The House Picked:</div>
+
+      <div className="pick">
+        <div className="pick__title result__desktop">{countLabel}</div>
+        <div className="pick__item">
+          <span>{count}</span>
         </div>
-      )}
-      <div
-        className={
-          'result__mobile game__result ' +
-          (resultMessage.length ? '' : 'invisible')
-        }
-      >
-        <h3>{resultMessage}</h3>
+        <div className="pick__title result__mobile">{countLabel}</div>
+      </div>
+
+      <div className="result__mobile game__result">
+        <h3>{password}</h3>
         <Link
           className="play-again__button "
           to="/"
-          onClick={() => props.setHousePick()}
+          // onClick={() => props.setHousePick()}
         >
-          Play Again
+          Yes! We got it!
+        </Link>
+
+        <Link
+          className="play-again__button "
+          to="/"
+          // onClick={() => props.setHousePick()}
+        >
+          Nope, skip to next player
         </Link>
       </div>
     </div>

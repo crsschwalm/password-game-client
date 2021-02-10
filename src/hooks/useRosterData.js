@@ -12,6 +12,7 @@ const emptyTeam = (num) => ({
 });
 
 const useRosterData = () => {
+  const socket = useContext(SocketContext);
   const [roster, setRoster] = useState([emptyTeam(1), emptyTeam(2)]);
 
   const [myPlayer, setMyPlayer] = useState({
@@ -29,49 +30,31 @@ const useRosterData = () => {
       .every(Boolean);
 
   const incrementScore = (teamIndex) => {
-    const newRoster = roster.map((team, i) => {
-      if (teamIndex === i) {
-        return { ...team, score: team.score + 1 };
-      }
-      return team;
-    });
-
-    socket.emit('fromClient.update.roster', newRoster);
+    socket.emit('fromClient.increment.score', teamIndex);
   };
 
-  const handleRosterChange = (teamIndex, playerIndex, username) => {
-    setMyPlayer({ teamIndex, playerIndex, username });
-
-    const newRoster = roster.map((team, tIndex) => ({
-      ...team,
-      players: team.players.map((player, pIndex) => {
-        if (player.name === username) {
-          return emptyRosterSpot(pIndex);
-        }
-
-        if (teamIndex === tIndex && playerIndex === pIndex && !player.set) {
-          return { name: username, set: true };
-        }
-
-        return player;
-      }),
-    }));
-
-    socket.emit('fromClient.update.roster', newRoster);
+  const incrementRound = () => {
+    socket.emit('fromClient.increment.round');
   };
 
-  const socket = useContext(SocketContext);
+  const handleRosterChange = (payload) => {
+    setMyPlayer(payload);
+    socket.emit('fromClient.update.roster', payload);
+  };
 
   useEffect(() => {
     socket.on('fromApi.update.roster', setRoster);
 
-    return () => socket.off('fromApi.update.roster', setRoster);
+    return () => {
+      socket.off('fromApi.update.roster', setRoster);
+    };
   }, [socket, setRoster]);
 
   return {
     rosterReady,
     handleRosterChange,
     incrementScore,
+    incrementRound,
     roster,
     myPlayer,
   };

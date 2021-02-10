@@ -4,6 +4,7 @@ import Header from './header';
 import Home from './home';
 import Footer from './footer';
 import Groups from './groups';
+import Play from './play';
 import '../css/app.scss';
 
 function Game() {
@@ -12,16 +13,10 @@ function Game() {
       <div className="wrapper">
         <Header scoreCard={{ 'alpha team': 5, betas: '9' }} />
         <Switch className="main">
-          <Route path="/play">
-            {/* <Play
-              mine={myPick}
-              house={housePick}
-              score={gameScore}
-              setScore={setGameScore}
-              setHousePick={newHousePick}
-            /> */}
+          <Route path="/play/:id">
+            <Play />
           </Route>
-          <Route path="/groups">
+          <Route path="/groups/:id">
             <Groups />
           </Route>
           <Route path="/">

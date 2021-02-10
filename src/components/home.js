@@ -12,7 +12,9 @@ function Home(props) {
       <div className="start_controls">
         {!shouldJoin ? (
           <>
-            <Link to="/groups">Start New Game</Link>
+            <Link to={`/groups/${Math.random().toString(36).substring(7)}`}>
+              Start New Game
+            </Link>
             <span className="link" onClick={() => setShouldJoin(true)}>
               Join Game
             </span>
@@ -26,7 +28,7 @@ function Home(props) {
               placeholder="GROUP CODE"
             ></input>
 
-            <Link to="/groups">Go</Link>
+            <Link to={`/groups/${group}`}>Go</Link>
 
             <span onClick={() => setShouldJoin(false)}>Back</span>
           </>

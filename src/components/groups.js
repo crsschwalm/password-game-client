@@ -1,14 +1,34 @@
-import React, { useState, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import { ScoreCard } from '../context/score-card';
+import { SocketContext } from '../context/socket';
+import useRoomData from '../hooks/useRoomData';
 
 function Groups(props) {
-  const [userName, setUserName] = useState('');
+  const { id } = useRoomData();
+  const socket = useContext(SocketContext);
+  const { roster, handleRosterChange, rosterReady } = useContext(ScoreCard);
+  const history = useHistory();
+
+  const [username, setUsername] = useState('');
   const [hasName, setHasName] = useState(false);
 
-  const { roster, handleRosterChange, rosterReady } = useContext(ScoreCard);
+  const handleNameChange = ({ target: { value } }) => setUsername(value);
 
-  const handleNameChange = ({ target: { value } }) => setUserName(value);
+  const startGame = () => {
+    socket.emit('fromClient.start.game', id);
+  };
+
+  const sendToGame = (room) => {
+    history.push(`/play/${room}`);
+  };
+
+  useEffect(() => {
+    socket.on('fromApi.start.game', sendToGame);
+    return () => {
+      socket.off('fromApi.start.game', sendToGame);
+    };
+  }, []);
 
   return (
     <div className="groups">
@@ -16,13 +36,13 @@ function Groups(props) {
         <div className="groups_controls">
           <input
             className="link"
-            value={userName}
+            value={username}
             onChange={handleNameChange}
             placeholder="Your name"
           ></input>
 
           <button
-            disabled={!userName.length}
+            disabled={!username.length}
             className="button"
             onClick={() => setHasName(true)}
           >
@@ -43,7 +63,7 @@ function Groups(props) {
                       player.set ? 'active' : ''
                     }`}
                     onClick={() =>
-                      handleRosterChange(teamIndex, playerIndex, userName)
+                      handleRosterChange({ teamIndex, playerIndex, username })
                     }
                   >
                     {player.name}
@@ -54,9 +74,9 @@ function Groups(props) {
           </div>
 
           {rosterReady() && (
-            <Link to="/play" disabled={!userName.length} className="link">
-              Ready!
-            </Link>
+            <button className="button" onClick={() => startGame()}>
+              Start the game!
+            </button>
           )}
         </div>
       )}
