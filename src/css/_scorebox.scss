@@ -4,6 +4,7 @@
   justify-content: space-between;
 
   .scorebox {
+    position: relative;
     margin: 0.5rem;
     background-color: white;
     color: $score-text;
@@ -15,6 +16,14 @@
       color: $header-outline;
       font-size: 2.5rem;
       font-weight: 700;
+    }
+
+    span.my-team {
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      color: $red-color;
+      font-size: 1rem;
     }
   }
 }

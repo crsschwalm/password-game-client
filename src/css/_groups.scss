@@ -59,21 +59,19 @@
         text-transform: uppercase;
         font-size: 1.5rem;
         font-weight: 700;
-        &__1 {
-          border: 5px solid $gold-color;
-        }
-        &__2 {
+        border: 5px solid $gold-color;
+        &:nth-child(2n) {
           border: 5px solid $purple-color;
         }
 
         .player {
           border: 3px solid #ffffff;
           margin-bottom: 1rem;
-          &__1.active {
-            background-color: $blue-color;
-          }
-          &__2.active {
+          &.active {
             background-color: $red-color;
+          }
+          &:nth-child(2n).active {
+            background-color: $blue-color;
           }
         }
       }
@@ -148,9 +146,9 @@
           font-size: 1.8rem;
           font-weight: 700;
 
-          &__1 {
+          &__0 {
           }
-          &__2 {
+          &__1 {
           }
         }
       }

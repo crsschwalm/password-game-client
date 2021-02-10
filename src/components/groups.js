@@ -1,24 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
-const defaultHinter = { name: 'Hint First', set: false };
-const defaultGuesser = { name: 'Guess First', set: false };
+import { ScoreCard } from '../context/score-card';
 
 function Groups(props) {
-  const [hasName, setHasName] = useState(false);
   const [userName, setUserName] = useState('');
+  const [hasName, setHasName] = useState(false);
 
-  const roster = [
-    [defaultHinter, defaultGuesser],
-    [defaultHinter, defaultGuesser],
-  ];
-
-  const ready = Object.values(roster)
-    .reduce((acc, curr) => [...Object.values(curr), ...acc], [])
-    .every(({ set }) => Boolean(set));
+  const { roster, handleRosterChange, rosterReady } = useContext(ScoreCard);
 
   const handleNameChange = ({ target: { value } }) => setUserName(value);
-
-  console.log('roster :>> ', roster);
 
   return (
     <div className="groups">
@@ -43,40 +33,28 @@ function Groups(props) {
         <div className="groups_team_selection">
           <h1>Team Selection</h1>
           <div className="teams">
-            {roster.map((team, teamIndex) => {
-              const teamNumber = teamIndex + 1;
-              return (
-                <div className={`team team__${teamNumber}`}>
-                  <h3>Team {teamNumber}</h3>
-                  {team.map((player, playerIndex) => {
-                    const playerNumber = playerIndex + 1;
-                    return (
-                      <div
-                        className={`player player__${playerNumber} ${
-                          player.set ? 'active' : ''
-                        }`}
-                        onClick={() => {
-                          roster[teamIndex][playerIndex] = {
-                            name: userName,
-                            set: true,
-                          };
-                        }}
-                      >
-                        {player.name}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
+            {roster.map((team, teamIndex) => (
+              <div className={`team team__${teamIndex + 1}`} key={teamIndex}>
+                <h3>Team {teamIndex + 1}</h3>
+                {team.players.map((player, playerIndex) => (
+                  <div
+                    key={playerIndex}
+                    className={`player player__${playerIndex} ${
+                      player.set ? 'active' : ''
+                    }`}
+                    onClick={() =>
+                      handleRosterChange(teamIndex, playerIndex, userName)
+                    }
+                  >
+                    {player.name}
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
 
-          {ready && (
-            <Link
-              disabled={!userName.length}
-              className="link"
-              onClick={() => setHasName(true)}
-            >
+          {rosterReady() && (
+            <Link to="/play" disabled={!userName.length} className="link">
               Ready!
             </Link>
           )}

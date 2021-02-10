@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { ScoreCard } from '../context/score-card';
 
 function Scorebox(props) {
+  const { roster, myPlayer } = useContext(ScoreCard);
+
   return (
     <div className="scores">
-      {Object.entries(props.scoreCard).map(([team, score]) => (
-        <div className="scorebox">
-          <div className="scorebox__title">{team}</div>
+      {roster.map(({ name, score }, teamIndex) => (
+        <div className="scorebox" key={teamIndex}>
+          {teamIndex === myPlayer.teamIndex && (
+            <span className="my-team">(me)</span>
+          )}
+          <div className="scorebox__title">{name}</div>
           <div className="scorebox__score">{score}</div>
         </div>
       ))}

@@ -1,17 +1,16 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import Game from './components/game';
-import { SocketContext, socket } from './context/socket';
+import { ScoreCardProvider } from './context/score-card';
+import { SocketProvider } from './context/socket';
 
 function App() {
-  useEffect(() => {
-    return () => socket.disconnect();
-  }, []);
-
   return (
-    <SocketContext.Provider value={socket}>
-      <Game></Game>
-    </SocketContext.Provider>
+    <SocketProvider>
+      <ScoreCardProvider>
+        <Game></Game>
+      </ScoreCardProvider>
+    </SocketProvider>
   );
 }
 
