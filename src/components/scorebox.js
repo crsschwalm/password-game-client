@@ -11,7 +11,7 @@ function Scorebox(props) {
           {teamIndex === myPlayer.teamIndex && (
             <span className="my-team">(me)</span>
           )}
-          {teamIndex === whosTurn.teamGivingHint && (
+          {teamIndex === whosTurn.teamIndex && (
             <span className="active-team">🟢</span>
           )}
           <div className="scorebox__title">{name}</div>

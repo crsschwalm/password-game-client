@@ -8,6 +8,19 @@ header {
   padding: 20px;
   margin-top: 20px;
   box-sizing: border-box;
+  position: relative;
+
+  .whos-turn {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 50%;
+    h3 {
+      font-size: 1.5rem;
+      text-decoration: underline;
+    }
+  }
 
   > .header__title {
     display: flex;
@@ -26,6 +39,20 @@ header {
   header {
     padding: 20px;
     display: block;
+    position: relative;
+
+    .whos-turn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      h3 {
+        font-size: 1rem;
+        text-decoration: none;
+        span {
+          display: block;
+        }
+      }
+    }
 
     > .header__title {
       text-align: center;

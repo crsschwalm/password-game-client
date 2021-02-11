@@ -23,10 +23,10 @@ function Play(props) {
   const [passwordReady, setPasswordReady] = useState(false);
   const [roundActive, setRoundActive] = useState(true);
 
-  const myTurn = myPlayer.username === whosTurn.user?.name;
-  console.log('myPlayer :>> ', myPlayer);
+  const myTurn = myPlayer.username === whosTurn.playerGivingHint?.name;
+
   const showPassword =
-    passwordReady && myPlayer.playerIndex === whosTurn.playerGivingHint;
+    passwordReady && myPlayer.playerIndex === whosTurn.playerIndex;
 
   const scorePoint = () => {
     socket.emit('fromClient.team.scored', myPlayer.teamIndex);
@@ -93,15 +93,15 @@ function Play(props) {
         <div className="result__desktop game__result">
           <h3>{password}</h3>
           {myTurn && (
-            <>
-              <button className="play-again__button " onClick={scorePoint}>
+            <div className="your-turn-controls">
+              <button className="play-again__button score" onClick={scorePoint}>
                 Yes! We got it!
               </button>
 
-              <button className="play-again__button " onClick={skipTurn}>
+              <button className="play-again__button skip" onClick={skipTurn}>
                 Nope, skip to next player
               </button>
-            </>
+            </div>
           )}
         </div>
       )}
@@ -117,15 +117,15 @@ function Play(props) {
         <div className="result__mobile game__result">
           <h3>{password}</h3>
           {myTurn && (
-            <>
-              <button className="play-again__button " onClick={scorePoint}>
+            <div className="your-turn-controls">
+              <button className="play-again__button score" onClick={scorePoint}>
                 Yes! We got it!
               </button>
 
-              <button className="play-again__button " onClick={skipTurn}>
+              <button className="play-again__button skip" onClick={skipTurn}>
                 Nope, skip to next player
               </button>
-            </>
+            </div>
           )}
         </div>
       )}
