@@ -1,17 +1,28 @@
 import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import Modal from './modal';
 
 function Footer() {
+  const history = useHistory();
   const [showModal, setShowModal] = useState(false);
 
   function toggleModal() {
     setShowModal(!showModal);
   }
 
+  function goHome() {
+    history.push('/');
+  }
+
   return (
     <div>
       <footer>
-        <button onClick={toggleModal}>Rules</button>
+        <button className="go-home" onClick={goHome}>
+          Go home
+        </button>
+        <button className="open-rules" onClick={toggleModal}>
+          Rules
+        </button>
         <p className="footer__message">Have fun playing 🔏</p>
       </footer>
       {showModal ? (
@@ -31,7 +42,7 @@ function Footer() {
             <li>First to 5 wins</li>
           </ul>
           <button className="mobile__button" onClick={toggleModal}>
-            ⓧ
+            ( ❌ )
           </button>
         </Modal>
       ) : null}

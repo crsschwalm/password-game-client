@@ -7,9 +7,15 @@ footer {
   }
 
   button {
+    &.open-rules {
+      right: 15px;
+    }
+    &.go-home {
+      left: 15px;
+    }
+
     position: absolute;
     bottom: 0px;
-    right: 15px;
     padding: 7px 25px;
     text-transform: uppercase;
     background: none;
@@ -54,6 +60,8 @@ footer {
 
     button {
       position: static;
+      width: 85%;
+      margin-bottom: 1rem;
     }
   }
 }

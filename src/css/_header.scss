@@ -45,6 +45,9 @@ header {
       position: absolute;
       top: 0;
       right: 0;
+      left: unset;
+      width: auto;
+
       h3 {
         font-size: 1rem;
         text-decoration: none;

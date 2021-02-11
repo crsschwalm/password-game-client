@@ -87,24 +87,33 @@ function Play(props) {
     );
   }
 
+  const TurnDisplay = ({ className, onSkip, onScore, isMyTurn, show }) =>
+    show ? (
+      <div className={`${className} game__result`}>
+        <h3>{password}</h3>
+        {isMyTurn && (
+          <div className="your-turn-controls">
+            <button className="play-again__button score" onClick={onScore}>
+              Yes! We got it!
+            </button>
+
+            <button className="play-again__button skip" onClick={onSkip}>
+              Nope, skip to next player
+            </button>
+          </div>
+        )}
+      </div>
+    ) : null;
+
   return (
     <div className="play-wrapper">
-      {showPassword && (
-        <div className="result__desktop game__result">
-          <h3>{password}</h3>
-          {myTurn && (
-            <div className="your-turn-controls">
-              <button className="play-again__button score" onClick={scorePoint}>
-                Yes! We got it!
-              </button>
-
-              <button className="play-again__button skip" onClick={skipTurn}>
-                Nope, skip to next player
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      <TurnDisplay
+        className="result__desktop"
+        onSkip={skipTurn}
+        onScore={scorePoint}
+        show={showPassword}
+        isMyTurn={true || myTurn}
+      />
       <div className="pick">
         <div className="pick__title result__desktop">{countLabel}</div>
         <div className="pick__item">
@@ -113,22 +122,13 @@ function Play(props) {
         <div className="pick__title result__mobile">{countLabel}</div>
       </div>
 
-      {showPassword && (
-        <div className="result__mobile game__result">
-          <h3>{password}</h3>
-          {myTurn && (
-            <div className="your-turn-controls">
-              <button className="play-again__button score" onClick={scorePoint}>
-                Yes! We got it!
-              </button>
-
-              <button className="play-again__button skip" onClick={skipTurn}>
-                Nope, skip to next player
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      <TurnDisplay
+        className="result__mobile"
+        onSkip={skipTurn}
+        onScore={scorePoint}
+        show={showPassword}
+        isMyTurn={true || myTurn}
+      />
     </div>
   );
 }
