@@ -1,25 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
 import { SocketContext } from '../context/socket';
 
-const emptyRosterSpot = (index) => ({
-  name: index === 0 ? 'Hint First' : 'Guess First',
-  set: false,
-});
-const emptyTeam = (num) => ({
-  name: `Team ${num}`,
-  score: 0,
-  players: [emptyRosterSpot(0), emptyRosterSpot(1)],
-});
-
 const useRosterData = () => {
   const socket = useContext(SocketContext);
-  const [roster, setRoster] = useState([emptyTeam(1), emptyTeam(2)]);
-
-  const [myPlayer, setMyPlayer] = useState({
-    username: '',
-    teamIndex: null,
-    playerIndex: null,
-  });
+  const [roster, setRoster] = useState([]);
+  const [myPlayer, setMyPlayer] = useState({});
 
   const rosterReady = () =>
     roster
@@ -28,14 +13,6 @@ const useRosterData = () => {
         []
       )
       .every(Boolean);
-
-  const incrementScore = (teamIndex) => {
-    socket.emit('fromClient.increment.score', teamIndex);
-  };
-
-  const incrementRound = () => {
-    socket.emit('fromClient.increment.round');
-  };
 
   const handleRosterChange = (payload) => {
     setMyPlayer(payload);
@@ -53,8 +30,6 @@ const useRosterData = () => {
   return {
     rosterReady,
     handleRosterChange,
-    incrementScore,
-    incrementRound,
     roster,
     myPlayer,
   };

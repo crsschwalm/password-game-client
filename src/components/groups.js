@@ -73,11 +73,13 @@ function Groups(props) {
             ))}
           </div>
 
-          {rosterReady() && (
-            <button className="button" onClick={() => startGame()}>
+          {/* {rosterReady() && ( */}
+          <div className="groups_controls">
+            <button className="button" onClick={startGame}>
               Start the game!
             </button>
-          )}
+          </div>
+          {/* )} */}
         </div>
       )}
     </div>

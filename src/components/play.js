@@ -1,81 +1,102 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { ScoreCard } from '../context/score-card';
 import { SocketContext } from '../context/socket';
+import useCounters from '../hooks/useCounters';
 import useRoomData from '../hooks/useRoomData';
-
-const wait = (ms = 0) => {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, ms);
-  });
-};
 
 function Play(props) {
   useRoomData();
-
   const socket = useContext(SocketContext);
-  const [countDown, setCountDown] = useState(3);
-  const [countUp, setCountUp] = useState(0);
-  const [countDirection, setCountDirection] = useState('down');
-  const [password, setPassword] = useState('The Password is...');
+  const { myPlayer } = useContext(ScoreCard);
 
-  const startCountDown = async (from = countDown, to = 0) => {
-    while (from > to) {
-      await wait(1000);
-      const newCount = from - 1;
-      setCountDown(newCount);
-      return startCountDown(newCount);
-    }
-    return;
+  const {
+    startCountDown,
+    startCountUp,
+    isCountingDown,
+    count,
+    resetTimer,
+  } = useCounters({
+    downFrom: 3,
+    upTo: 120,
+  });
+
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [roundActive, setRoundActive] = useState(true);
+
+  const scorePoint = () => {
+    socket.emit('fromClient.team.scored', myPlayer.teamIndex);
   };
 
-  const startCountUp = async (from = countUp, to = 120) => {
-    while (from < to) {
-      await wait(1000);
-      const newCount = from + 1;
-      setCountUp(newCount);
-      return startCountUp(newCount);
-    }
-    return;
+  const skipTurn = () => {
+    socket.emit('fromClient.next.turn');
+  };
+
+  const readyUp = () => {
+    socket.emit('fromClient.start.round');
+  };
+
+  const getNewWord = () => {
+    socket.emit('fromClient.shuffle.word');
   };
 
   useEffect(() => {
-    socket.on('fromApi.send.word', setPassword);
+    if (roundActive) {
+      setShowPassword(false);
+      resetTimer();
+      getNewWord();
 
-    setCountDirection('down');
-    startCountDown().then(() => {
-      setCountDirection('up');
-      startCountUp();
-    });
+      startCountDown().then(() => {
+        setShowPassword(true);
+        startCountUp();
+      });
+    }
+  }, [roundActive]);
+
+  useEffect(() => {
+    const onStartRound = () => setRoundActive(true);
+    const onEndRound = () => setRoundActive(false);
+
+    socket.on('fromApi.send.word', setPassword);
+    socket.on('fromApi.start.round', onStartRound);
+    socket.on('fromApi.end.round', onEndRound);
 
     return () => {
       socket.off('fromApi.send.word', setPassword);
+      socket.off('fromApi.start.round', onStartRound);
+      socket.off('fromApi.end.round', onEndRound);
     };
   }, []);
 
-  const countLabel = countDirection === 'up' ? 'Start Thinking' : 'Get Ready!';
-  const count = countDirection === 'up' ? countUp : countDown;
+  const countLabel = isCountingDown ? 'Get Ready!' : 'Start Thinking';
+
+  if (!roundActive) {
+    return (
+      <div className="play-wrapper">
+        <div className="result game__result">
+          <h3>Timeout!</h3>
+          <button className="play-again__button " onClick={readyUp}>
+            Ready for the next Round?
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="play-wrapper">
-      <div className="result__desktop game__result">
-        <h3>{password}</h3>
-        <Link
-          className="play-again__button "
-          to="/"
-          // onClick={() => props.setHousePick()}
-        >
-          Yes! We got it!
-        </Link>
+      {showPassword && (
+        <div className="result__desktop game__result">
+          <h3>{password}</h3>
+          <button className="play-again__button " onClick={scorePoint}>
+            Yes! We got it!
+          </button>
 
-        <Link
-          className="play-again__button "
-          to="/"
-          // onClick={() => props.setHousePick()}
-        >
-          Nope, skip to next player
-        </Link>
-      </div>
-
+          <button className="play-again__button " onClick={skipTurn}>
+            Nope, skip to next player
+          </button>
+        </div>
+      )}
       <div className="pick">
         <div className="pick__title result__desktop">{countLabel}</div>
         <div className="pick__item">
@@ -84,24 +105,18 @@ function Play(props) {
         <div className="pick__title result__mobile">{countLabel}</div>
       </div>
 
-      <div className="result__mobile game__result">
-        <h3>{password}</h3>
-        <Link
-          className="play-again__button "
-          to="/"
-          // onClick={() => props.setHousePick()}
-        >
-          Yes! We got it!
-        </Link>
+      {showPassword && (
+        <div className="result__mobile game__result">
+          <h3>{password}</h3>
+          <button className="play-again__button " onClick={scorePoint}>
+            Yes! We got it!
+          </button>
 
-        <Link
-          className="play-again__button "
-          to="/"
-          // onClick={() => props.setHousePick()}
-        >
-          Nope, skip to next player
-        </Link>
-      </div>
+          <button className="play-again__button " onClick={skipTurn}>
+            Nope, skip to next player
+          </button>
+        </div>
+      )}
     </div>
   );
 }
