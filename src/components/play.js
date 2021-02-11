@@ -7,8 +7,7 @@ import useRoomData from '../hooks/useRoomData';
 function Play(props) {
   useRoomData();
   const socket = useContext(SocketContext);
-  const { myPlayer } = useContext(ScoreCard);
-
+  const { myPlayer, whosTurn } = useContext(ScoreCard);
   const {
     startCountDown,
     startCountUp,
@@ -21,8 +20,13 @@ function Play(props) {
   });
 
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [passwordReady, setPasswordReady] = useState(false);
   const [roundActive, setRoundActive] = useState(true);
+
+  const myTurn = myPlayer.username === whosTurn.user?.name;
+  console.log('myPlayer :>> ', myPlayer);
+  const showPassword =
+    passwordReady && myPlayer.playerIndex === whosTurn.playerGivingHint;
 
   const scorePoint = () => {
     socket.emit('fromClient.team.scored', myPlayer.teamIndex);
@@ -42,12 +46,12 @@ function Play(props) {
 
   useEffect(() => {
     if (roundActive) {
-      setShowPassword(false);
+      setPasswordReady(false);
       resetTimer();
       getNewWord();
 
       startCountDown().then(() => {
-        setShowPassword(true);
+        setPasswordReady(true);
         startCountUp();
       });
     }
@@ -88,13 +92,17 @@ function Play(props) {
       {showPassword && (
         <div className="result__desktop game__result">
           <h3>{password}</h3>
-          <button className="play-again__button " onClick={scorePoint}>
-            Yes! We got it!
-          </button>
+          {myTurn && (
+            <>
+              <button className="play-again__button " onClick={scorePoint}>
+                Yes! We got it!
+              </button>
 
-          <button className="play-again__button " onClick={skipTurn}>
-            Nope, skip to next player
-          </button>
+              <button className="play-again__button " onClick={skipTurn}>
+                Nope, skip to next player
+              </button>
+            </>
+          )}
         </div>
       )}
       <div className="pick">
@@ -108,13 +116,17 @@ function Play(props) {
       {showPassword && (
         <div className="result__mobile game__result">
           <h3>{password}</h3>
-          <button className="play-again__button " onClick={scorePoint}>
-            Yes! We got it!
-          </button>
+          {myTurn && (
+            <>
+              <button className="play-again__button " onClick={scorePoint}>
+                Yes! We got it!
+              </button>
 
-          <button className="play-again__button " onClick={skipTurn}>
-            Nope, skip to next player
-          </button>
+              <button className="play-again__button " onClick={skipTurn}>
+                Nope, skip to next player
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

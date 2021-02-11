@@ -10,6 +10,7 @@ export const ScoreCardProvider = ({ children }) => {
     rosterReady,
     incrementScore,
     myPlayer,
+    whosTurn,
   } = useRosterData();
 
   return (
@@ -20,6 +21,7 @@ export const ScoreCardProvider = ({ children }) => {
         rosterReady,
         incrementScore,
         myPlayer,
+        whosTurn,
       }}
     >
       {children}

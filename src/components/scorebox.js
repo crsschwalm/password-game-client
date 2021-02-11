@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { ScoreCard } from '../context/score-card';
 
 function Scorebox(props) {
-  const { roster, myPlayer } = useContext(ScoreCard);
+  const { roster, myPlayer, whosTurn } = useContext(ScoreCard);
 
   return (
     <div className="scores">
@@ -10,6 +10,9 @@ function Scorebox(props) {
         <div className="scorebox" key={teamIndex}>
           {teamIndex === myPlayer.teamIndex && (
             <span className="my-team">(me)</span>
+          )}
+          {teamIndex === whosTurn.teamGivingHint && (
+            <span className="active-team">🟢</span>
           )}
           <div className="scorebox__title">{name}</div>
           <div className="scorebox__score">{score}</div>

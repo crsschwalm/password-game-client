@@ -5,6 +5,7 @@ const useRosterData = () => {
   const socket = useContext(SocketContext);
   const [roster, setRoster] = useState([]);
   const [myPlayer, setMyPlayer] = useState({});
+  const [whosTurn, setWhosTurn] = useState({});
 
   const rosterReady = () =>
     roster
@@ -21,9 +22,11 @@ const useRosterData = () => {
 
   useEffect(() => {
     socket.on('fromApi.update.roster', setRoster);
+    socket.on('fromApi.whos.turn', setWhosTurn);
 
     return () => {
       socket.off('fromApi.update.roster', setRoster);
+      socket.off('fromApi.whos.turn', setWhosTurn);
     };
   }, [socket, setRoster]);
 
@@ -32,6 +35,7 @@ const useRosterData = () => {
     handleRosterChange,
     roster,
     myPlayer,
+    whosTurn,
   };
 };
 
