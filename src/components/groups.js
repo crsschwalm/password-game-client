@@ -5,26 +5,44 @@ import { SocketContext } from '../context/socket';
 import useRoomData from '../hooks/useRoomData';
 
 function Groups(props) {
-  const { id } = useRoomData();
+  const { roomId } = useRoomData();
   const socket = useContext(SocketContext);
-  const { roster, handleRosterChange, rosterReady } = useContext(ScoreCard);
+  const { roster, handleRosterChange, rosterReady, myPlayer } = useContext(
+    ScoreCard
+  );
+
   const history = useHistory();
 
-  const [username, setUsername] = useState('');
   const [hasName, setHasName] = useState(false);
+  const [username, setUsername] = useState('');
 
-  const handleNameChange = ({ target: { value } }) => setUsername(value);
+  const handleNameChange = ({ target: { value } }) => {
+    setUsername(value);
+  };
 
   const startGame = () => {
-    socket.emit('fromClient.start.game', id);
+    socket.emit('fromClient.start.game', roomId);
   };
 
   const sendToGame = (room) => {
     history.push(`/play/${room}`);
   };
 
+  const submitName = () => {
+    socket.emit('fromClient.update.user', { username });
+    setHasName(true);
+  };
+
+  useEffect(() => {
+    if (myPlayer.username && !hasName) {
+      setUsername(myPlayer.username);
+      setHasName(true);
+    }
+  }, [myPlayer.username, hasName, setHasName, setUsername]);
+
   useEffect(() => {
     socket.on('fromApi.start.game', sendToGame);
+
     return () => {
       socket.off('fromApi.start.game', sendToGame);
     };
@@ -44,7 +62,7 @@ function Groups(props) {
           <button
             disabled={!username.length}
             className="button"
-            onClick={() => setHasName(true)}
+            onClick={submitName}
           >
             Ready!
           </button>
@@ -66,7 +84,7 @@ function Groups(props) {
                       handleRosterChange({ teamIndex, playerIndex, username })
                     }
                   >
-                    {player.name}
+                    {player.username}
                   </div>
                 ))}
               </div>

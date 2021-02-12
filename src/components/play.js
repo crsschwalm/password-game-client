@@ -23,7 +23,7 @@ function Play(props) {
   const [passwordReady, setPasswordReady] = useState(false);
   const [roundActive, setRoundActive] = useState(true);
 
-  const myTurn = myPlayer.username === whosTurn.playerGivingHint?.name;
+  const myTurn = myPlayer.username === whosTurn.playerGivingHint?.username;
 
   const showPassword =
     passwordReady && myPlayer.playerIndex === whosTurn.playerIndex;
@@ -74,46 +74,17 @@ function Play(props) {
 
   const countLabel = isCountingDown ? 'Get Ready!' : 'Start Thinking';
 
-  if (!roundActive) {
-    return (
-      <div className="play-wrapper">
-        <div className="result game__result">
-          <h3>Timeout!</h3>
-          <button className="play-again__button " onClick={readyUp}>
-            Ready for the next Round?
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const TurnDisplay = ({ className, onSkip, onScore, isMyTurn, show }) =>
-    show ? (
-      <div className={`${className} game__result`}>
-        <h3>{password}</h3>
-        {isMyTurn && (
-          <div className="your-turn-controls">
-            <button className="play-again__button score" onClick={onScore}>
-              Yes! We got it!
-            </button>
-
-            <button className="play-again__button skip" onClick={onSkip}>
-              Nope, skip to next player
-            </button>
-          </div>
-        )}
-      </div>
-    ) : null;
-
-  return (
+  return roundActive ? (
     <div className="play-wrapper">
       <TurnDisplay
         className="result__desktop"
         onSkip={skipTurn}
         onScore={scorePoint}
         show={showPassword}
-        isMyTurn={true || myTurn}
+        isMyTurn={myTurn}
+        password={password}
       />
+
       <div className="pick">
         <div className="pick__title result__desktop">{countLabel}</div>
         <div className="pick__item">
@@ -127,10 +98,49 @@ function Play(props) {
         onSkip={skipTurn}
         onScore={scorePoint}
         show={showPassword}
-        isMyTurn={true || myTurn}
+        isMyTurn={myTurn}
+        password={password}
       />
     </div>
+  ) : (
+    <RoundBreak onReady={readyUp}></RoundBreak>
   );
 }
+
+const RoundBreak = ({ onReady }) => (
+  <div className="play-wrapper">
+    <div className="result game__result">
+      <h3>Timeout!</h3>
+      <button className="play-again__button " onClick={onReady}>
+        Ready for the next Round?
+      </button>
+    </div>
+  </div>
+);
+
+const TurnDisplay = ({
+  className,
+  onSkip,
+  onScore,
+  isMyTurn,
+  show,
+  password,
+}) =>
+  show ? (
+    <div className={`${className} game__result`}>
+      <h3>{password}</h3>
+      {isMyTurn && (
+        <div className="your-turn-controls">
+          <button className="play-again__button score" onClick={onScore}>
+            Yes! We got it!
+          </button>
+
+          <button className="play-again__button skip" onClick={onSkip}>
+            Nope, skip to next player
+          </button>
+        </div>
+      )}
+    </div>
+  ) : null;
 
 export default Play;

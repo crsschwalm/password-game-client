@@ -13,10 +13,10 @@ function Game() {
       <div className="wrapper">
         <Header scoreCard={{ 'alpha team': 5, betas: '9' }} />
         <Switch className="main">
-          <Route path="/play/:id">
+          <Route path="/play/:roomId">
             <Play />
           </Route>
-          <Route path="/groups/:id">
+          <Route path="/groups/:roomId">
             <Groups />
           </Route>
           <Route path="/">

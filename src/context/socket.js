@@ -6,7 +6,11 @@ export const SocketContext = React.createContext();
 const socket = socketio.connect(ENDPOINT);
 
 export const SocketProvider = ({ children }) => {
-  useEffect(() => socket.disconnect, []);
+  useEffect(() => {
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>

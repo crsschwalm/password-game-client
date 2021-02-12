@@ -16,17 +16,18 @@ const useRosterData = () => {
       .every(Boolean);
 
   const handleRosterChange = (payload) => {
-    setMyPlayer(payload);
     socket.emit('fromClient.update.roster', payload);
   };
 
   useEffect(() => {
     socket.on('fromApi.update.roster', setRoster);
     socket.on('fromApi.whos.turn', setWhosTurn);
+    socket.on('fromApi.update.user', setMyPlayer);
 
     return () => {
       socket.off('fromApi.update.roster', setRoster);
       socket.off('fromApi.whos.turn', setWhosTurn);
+      socket.off('fromApi.update.user', setMyPlayer);
     };
   }, [socket, setRoster]);
 

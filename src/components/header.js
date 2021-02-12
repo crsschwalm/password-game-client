@@ -6,7 +6,7 @@ function Header(props) {
   const { whosTurn } = useContext(ScoreCard);
 
   const turnsSet =
-    whosTurn?.playerGivingHint?.name && whosTurn?.playerGuessing?.name;
+    whosTurn?.playerGivingHint?.username && whosTurn?.playerGuessing?.username;
 
   return (
     <header>
@@ -19,8 +19,8 @@ function Header(props) {
       {turnsSet && (
         <div className="whos-turn">
           <h3>
-            {whosTurn?.playerGivingHint?.name} <span>🤔👉🤷‍♂️</span>{' '}
-            {whosTurn?.playerGuessing?.name}
+            {whosTurn?.playerGivingHint?.username} <span>🤔👉🤷‍♂️</span>{' '}
+            {whosTurn?.playerGuessing?.username}
           </h3>
         </div>
       )}
