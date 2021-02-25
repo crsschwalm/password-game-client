@@ -80,6 +80,7 @@ function Play(props) {
         className="result__desktop"
         onSkip={skipTurn}
         onScore={scorePoint}
+        onShuffle={getNewWord}
         show={showPassword}
         isMyTurn={myTurn}
         password={password}
@@ -97,6 +98,7 @@ function Play(props) {
         className="result__mobile"
         onSkip={skipTurn}
         onScore={scorePoint}
+        onShuffle={getNewWord}
         show={showPassword}
         isMyTurn={myTurn}
         password={password}
@@ -122,6 +124,7 @@ const TurnDisplay = ({
   className,
   onSkip,
   onScore,
+  onShuffle,
   isMyTurn,
   show,
   password,
@@ -137,6 +140,10 @@ const TurnDisplay = ({
 
           <button className="play-again__button skip" onClick={onSkip}>
             Nope, skip to next player
+          </button>
+
+          <button className="play-again__button shuffle" onClick={onShuffle}>
+            Shuffle 🔀
           </button>
         </div>
       )}
