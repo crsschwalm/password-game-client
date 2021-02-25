@@ -1,32 +1,20 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { ScoreCard } from '../context/score-card';
 import { SocketContext } from '../context/socket';
-import useCounters from '../hooks/useCounters';
 import useRoomData from '../hooks/useRoomData';
 
 function Play(props) {
   useRoomData();
   const socket = useContext(SocketContext);
   const { myPlayer, whosTurn } = useContext(ScoreCard);
-  const {
-    startCountDown,
-    startCountUp,
-    isCountingDown,
-    count,
-    resetTimer,
-  } = useCounters({
-    downFrom: 3,
-    upTo: 120,
-  });
 
   const [password, setPassword] = useState('');
-  const [passwordReady, setPasswordReady] = useState(false);
   const [roundActive, setRoundActive] = useState(true);
+  const [count, setCount] = useState('');
 
   const myTurn = myPlayer.username === whosTurn.playerGivingHint?.username;
 
-  const showPassword =
-    passwordReady && myPlayer.playerIndex === whosTurn.playerIndex;
+  const showPassword = myPlayer.playerIndex === whosTurn.playerIndex;
 
   const scorePoint = () => {
     socket.emit('fromClient.team.scored', myPlayer.teamIndex);
@@ -36,8 +24,12 @@ function Play(props) {
     socket.emit('fromClient.next.turn');
   };
 
-  const readyUp = () => {
+  const startRound = () => {
     socket.emit('fromClient.start.round');
+  };
+
+  const endRound = () => {
+    socket.emit('fromClient.end.round');
   };
 
   const getNewWord = () => {
@@ -45,16 +37,7 @@ function Play(props) {
   };
 
   useEffect(() => {
-    if (roundActive) {
-      setPasswordReady(false);
-      resetTimer();
-      getNewWord();
-
-      startCountDown().then(() => {
-        setPasswordReady(true);
-        startCountUp();
-      });
-    }
+    console.log('roundActive :>> ', roundActive);
   }, [roundActive]);
 
   useEffect(() => {
@@ -64,15 +47,17 @@ function Play(props) {
     socket.on('fromApi.send.word', setPassword);
     socket.on('fromApi.start.round', onStartRound);
     socket.on('fromApi.end.round', onEndRound);
+    socket.on('fromApi.timer', setCount);
 
     return () => {
       socket.off('fromApi.send.word', setPassword);
       socket.off('fromApi.start.round', onStartRound);
       socket.off('fromApi.end.round', onEndRound);
+      socket.off('fromApi.timer', setCount);
     };
   }, []);
 
-  const countLabel = isCountingDown ? 'Get Ready!' : 'Start Thinking';
+  const countLabel = 'Start Thinking';
 
   return roundActive ? (
     <div className="play-wrapper">
@@ -105,7 +90,7 @@ function Play(props) {
       />
     </div>
   ) : (
-    <RoundBreak onReady={readyUp}></RoundBreak>
+    <RoundBreak onReady={startRound}></RoundBreak>
   );
 }
 
