@@ -1,12 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { ScoreCard } from '../context/score-card';
-import { SocketContext } from '../context/socket';
 import useRoomData from '../hooks/useRoomData';
+import useSocketListener from '../hooks/useSocketListener';
 
 function Groups(props) {
   const { roomId } = useRoomData();
-  const socket = useContext(SocketContext);
   const { roster, handleRosterChange, rosterReady, myPlayer } = useContext(
     ScoreCard
   );
@@ -20,16 +19,18 @@ function Groups(props) {
     setUsername(value);
   };
 
-  const startGame = () => {
-    socket.emit('fromClient.start.game', roomId);
-  };
-
-  const sendToGame = (room) => {
+  const startGame = (room) => {
     history.push(`/play/${room}`);
   };
 
+  const socket = useSocketListener({ startGame });
+
+  const emitStartGame = () => {
+    socket.emit('fromClient', { method: 'startGame', payload: roomId });
+  };
+
   const submitName = () => {
-    socket.emit('fromClient.update.user', { username });
+    socket.emit('fromClient', { method: 'setMyPlayer', payload: { username } });
     setHasName(true);
   };
 
@@ -39,14 +40,6 @@ function Groups(props) {
       setHasName(true);
     }
   }, [myPlayer.username, hasName, setHasName, setUsername]);
-
-  useEffect(() => {
-    socket.on('fromApi.start.game', sendToGame);
-
-    return () => {
-      socket.off('fromApi.start.game', sendToGame);
-    };
-  }, []);
 
   return (
     <div className="groups">
@@ -93,7 +86,7 @@ function Groups(props) {
 
           {/* {rosterReady() && ( */}
           <div className="groups_controls">
-            <button className="button" onClick={startGame}>
+            <button className="button" onClick={emitStartGame}>
               Start the game!
             </button>
           </div>

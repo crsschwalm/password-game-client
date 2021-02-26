@@ -1,6 +1,6 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { SocketContext } from '../context/socket';
+import useSocketListener from './useSocketListener';
 
 const generateUserId = () => Math.random().toString(24);
 
@@ -8,8 +8,6 @@ const userIdProperty = 'password-game-user-id';
 
 const useRoomData = () => {
   const { roomId } = useParams();
-  const socket = useContext(SocketContext);
-
   const [inRoom, setInRoom] = useState(false);
 
   let userId = localStorage.getItem(userIdProperty);
@@ -19,23 +17,19 @@ const useRoomData = () => {
     localStorage.setItem(userIdProperty, userId);
   }
 
-  const joinRoom = () => {
-    socket.emit('fromClient.join.room', { roomId, userId });
-  };
+  const socket = useSocketListener({ setInRoom });
 
   useEffect(() => {
-    socket.on('fromApi.in.room', setInRoom);
+    const joinRoom = () =>
+      socket.emit('fromClient', {
+        method: 'joinRoom',
+        payload: { roomId, userId },
+      });
 
-    return () => {
-      socket.off('fromApi.in.room', setInRoom);
-    };
-  }, []);
-
-  useEffect(() => {
     if (!inRoom && roomId) {
       joinRoom();
     }
-  }, [roomId, inRoom]);
+  }, [socket, userId, roomId, inRoom]);
 
   return { roomId };
 };

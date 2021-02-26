@@ -1,96 +1,78 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { ScoreCard } from '../context/score-card';
-import { SocketContext } from '../context/socket';
 import useRoomData from '../hooks/useRoomData';
+import useSocketListener from '../hooks/useSocketListener';
 
 function Play(props) {
   useRoomData();
-  const socket = useContext(SocketContext);
   const { myPlayer, whosTurn } = useContext(ScoreCard);
 
   const [password, setPassword] = useState('');
   const [roundActive, setRoundActive] = useState(true);
-  const [count, setCount] = useState('');
+  const [time, setTime] = useState('');
 
   const myTurn = myPlayer.username === whosTurn.playerGivingHint?.username;
 
   const showPassword = myPlayer.playerIndex === whosTurn.playerIndex;
 
-  const scorePoint = () => {
-    socket.emit('fromClient.team.scored', myPlayer.teamIndex);
-  };
+  const socket = useSocketListener({
+    setPassword,
+    setTime,
+    startRound: () => setRoundActive(true),
+    endRound: () => setRoundActive(false),
+  });
 
-  const skipTurn = () => {
-    socket.emit('fromClient.next.turn');
-  };
+  const scorePoint = () =>
+    socket.emit('fromClient', {
+      method: 'teamScored',
+      payload: myPlayer.teamIndex,
+    });
 
-  const startRound = () => {
-    socket.emit('fromClient.start.round');
-  };
+  const emitNextTurn = () =>
+    socket.emit('fromClient', { method: 'startNextTurn' });
 
-  const endRound = () => {
-    socket.emit('fromClient.end.round');
-  };
+  const emitStartRound = () =>
+    socket.emit('fromClient', { method: 'startRound' });
 
-  const getNewWord = () => {
-    socket.emit('fromClient.shuffle.word');
-  };
+  const emitEndRound = () => socket.emit('fromClient', { method: 'endRound' });
+
+  const emitGetNewWord = () =>
+    socket.emit('fromClient', { method: 'shuffleWord' });
 
   useEffect(() => {
     console.log('roundActive :>> ', roundActive);
   }, [roundActive]);
 
-  useEffect(() => {
-    const onStartRound = () => setRoundActive(true);
-    const onEndRound = () => setRoundActive(false);
+  const timeLabel = !!password ? 'Get Ready' : 'Start Thinking';
 
-    socket.on('fromApi.send.word', setPassword);
-    socket.on('fromApi.start.round', onStartRound);
-    socket.on('fromApi.end.round', onEndRound);
-    socket.on('fromApi.timer', setCount);
-
-    return () => {
-      socket.off('fromApi.send.word', setPassword);
-      socket.off('fromApi.start.round', onStartRound);
-      socket.off('fromApi.end.round', onEndRound);
-      socket.off('fromApi.timer', setCount);
-    };
-  }, []);
-
-  const countLabel = 'Start Thinking';
+  const renderTurnDisplay = (className) => (
+    <TurnDisplay
+      className={className}
+      onSkip={emitNextTurn}
+      onScore={scorePoint}
+      onShuffle={emitGetNewWord}
+      show={showPassword}
+      isMyTurn={myTurn}
+      password={password}
+    />
+  );
 
   return roundActive ? (
     <div className="play-wrapper">
-      <TurnDisplay
-        className="result__desktop"
-        onSkip={skipTurn}
-        onScore={scorePoint}
-        onShuffle={getNewWord}
-        show={showPassword}
-        isMyTurn={myTurn}
-        password={password}
-      />
+      {renderTurnDisplay('result__desktop')}
 
       <div className="pick">
-        <div className="pick__title result__desktop">{countLabel}</div>
+        <div className="pick__title result__desktop">{timeLabel}</div>
         <div className="pick__item">
-          <span>{count}</span>
+          <span>{time}</span>
         </div>
-        <div className="pick__title result__mobile">{countLabel}</div>
+        <div className="pick__title result__mobile">{timeLabel}</div>
       </div>
 
-      <TurnDisplay
-        className="result__mobile"
-        onSkip={skipTurn}
-        onScore={scorePoint}
-        onShuffle={getNewWord}
-        show={showPassword}
-        isMyTurn={myTurn}
-        password={password}
-      />
+      {renderTurnDisplay('result__mobile')}
     </div>
   ) : (
-    <RoundBreak onReady={startRound}></RoundBreak>
+    <RoundBreak onReady={emitStartRound}></RoundBreak>
   );
 }
 
@@ -120,15 +102,15 @@ const TurnDisplay = ({
       {isMyTurn && (
         <div className="your-turn-controls">
           <button className="play-again__button score" onClick={onScore}>
-            Yes! We got it!
+            We guessed it ✅
           </button>
 
           <button className="play-again__button skip" onClick={onSkip}>
-            Nope, skip to next player
+            Next Player 👉
           </button>
 
           <button className="play-again__button shuffle" onClick={onShuffle}>
-            Shuffle 🔀
+            Shuffle Word 🔀
           </button>
         </div>
       )}
